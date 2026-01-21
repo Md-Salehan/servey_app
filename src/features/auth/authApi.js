@@ -14,6 +14,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ['User'],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -22,25 +23,53 @@ export const authApi = createApi({
         body: credentials,
       }),
       transformResponse: (response) => {
-        // Store tokens on successful login
         if (response.accessToken && response.refreshToken) {
           TokenService.setTokens(response.accessToken, response.refreshToken);
           TokenService.setUserData(response);
         }
         return response;
       },
+      invalidatesTags: ['User'],
     }),
-    register: builder.mutation({
-      query: (userData) => ({
-        url: '/register',
+    
+    // OTP APIs
+    generateOTP: builder.mutation({
+      query: ({ phone, password }) => ({
+        url: '/otp/generate',
         method: 'POST',
-        body: userData,
+        body: { phone, password },
       }),
     }),
+    
+    validateOTP: builder.mutation({
+      query: ({ phone, otp }) => ({
+        url: '/otp/validate',
+        method: 'POST',
+        body: { phone, otp },
+      }),
+      transformResponse: (response) => {
+        if (response.accessToken && response.refreshToken) {
+          TokenService.setTokens(response.accessToken, response.refreshToken);
+          TokenService.setUserData(response);
+        }
+        return response;
+      },
+      invalidatesTags: ['User'],
+    }),
+    
+    resendOTP: builder.mutation({
+      query: (phone) => ({
+        url: '/otp/resend',
+        method: 'POST',
+        body: { phone },
+      }),
+    }),
+    
     getCurrentUser: builder.query({
       query: () => '/me',
       providesTags: ['User'],
     }),
+    
     refreshToken: builder.mutation({
       query: (refreshData) => ({
         url: '/refresh',
@@ -53,7 +82,9 @@ export const authApi = createApi({
 
 export const {
   useLoginMutation,
-  useRegisterMutation,
+  useGenerateOTPMutation,
+  useValidateOTPMutation,
+  useResendOTPMutation,
   useGetCurrentUserQuery,
   useLazyGetCurrentUserQuery,
   useRefreshTokenMutation,
