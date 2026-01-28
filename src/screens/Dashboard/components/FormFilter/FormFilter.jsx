@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { COLORS } from '../../../../constants/colors';
 import { formFilterStyles as styles } from './FormFilter.styles';
 
@@ -60,7 +60,7 @@ export const FormFilter = ({
           ]}
           onPress={() => setShowFilters(true)}
         >
-          <MaterialIcons 
+          <Icon 
             name="filter-list" 
             size={20} 
             color={filterCount > 0 ? COLORS.primary : COLORS.text.secondary} 
@@ -83,9 +83,9 @@ export const FormFilter = ({
           style={styles.sortButton}
           onPress={() => setShowSort(true)}
         >
-          <MaterialIcons name="sort" size={20} color={COLORS.text.secondary} />
+          <Icon name="sort" size={20} color={COLORS.text.secondary} />
           <Text style={styles.sortButtonText}>{getActiveSortLabel()}</Text>
-          <MaterialIcons name="expand-more" size={16} color={COLORS.text.secondary} />
+          <Icon name="expand-more" size={16} color={COLORS.text.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -93,7 +93,7 @@ export const FormFilter = ({
       <Modal
         visible={showFilters}
         transparent={true}
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setShowFilters(false)}
       >
         <TouchableOpacity 
@@ -105,7 +105,7 @@ export const FormFilter = ({
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Filter Forms</Text>
               <TouchableOpacity onPress={() => setShowFilters(false)}>
-                <MaterialIcons name="close" size={24} color={COLORS.text.secondary} />
+                <Icon name="close" size={24} color={COLORS.text.secondary} />
               </TouchableOpacity>
             </View>
             
@@ -120,7 +120,7 @@ export const FormFilter = ({
                   onPress={() => handleFilterSelect(option.id)}
                 >
                   <View style={styles.optionContent}>
-                    <MaterialIcons 
+                    <Icon 
                       name={option.icon} 
                       size={20} 
                       color={activeFilter === option.id ? COLORS.primary : COLORS.text.secondary} 
@@ -133,7 +133,7 @@ export const FormFilter = ({
                     </Text>
                   </View>
                   {activeFilter === option.id && (
-                    <MaterialIcons name="check" size={20} color={COLORS.primary} />
+                    <Icon name="check" size={20} color={COLORS.primary} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -158,7 +158,7 @@ export const FormFilter = ({
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Sort By</Text>
               <TouchableOpacity onPress={() => setShowSort(false)}>
-                <MaterialIcons name="close" size={24} color={COLORS.text.secondary} />
+                <Icon name="close" size={24} color={COLORS.text.secondary} />
               </TouchableOpacity>
             </View>
             
@@ -173,7 +173,7 @@ export const FormFilter = ({
                   onPress={() => handleSortSelect(option.id)}
                 >
                   <View style={styles.optionContent}>
-                    <MaterialIcons 
+                    <Icon 
                       name={option.icon} 
                       size={20} 
                       color={activeSort === option.id ? COLORS.primary : COLORS.text.secondary} 
@@ -186,7 +186,7 @@ export const FormFilter = ({
                     </Text>
                   </View>
                   {activeSort === option.id && (
-                    <MaterialIcons name="check" size={20} color={COLORS.primary} />
+                    <Icon name="check" size={20} color={COLORS.primary} />
                   )}
                 </TouchableOpacity>
               ))}

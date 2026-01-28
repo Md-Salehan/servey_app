@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { COLORS } from '../../../../constants/colors';
 import { formCardStyles as styles } from './FormCard.styles';
-import { MaterialIcons } from '@expo/vector-icons';
 
 const STATUS_CONFIG = {
   active: {
@@ -49,13 +49,13 @@ export const FormCard = React.memo(({
       >
         <View style={styles.cardHeader}>
           <View style={[styles.statusBadge, { backgroundColor: statusConfig.color }]}>
-            <MaterialIcons name={statusConfig.icon} size={14} color={COLORS.surface} />
+            <Icon name={statusConfig.icon} size={14} color={COLORS.surface} />
             <Text style={styles.statusText}>{statusConfig.label}</Text>
           </View>
 
           {form.priority === 'high' && (
             <View style={styles.priorityBadge}>
-              <MaterialIcons name="priority-high" size={14} color={COLORS.error} />
+              <Icon name="priority-high" size={14} color={COLORS.error} />
               <Text style={styles.priorityText}>High Priority</Text>
             </View>
           )}
@@ -71,14 +71,14 @@ export const FormCard = React.memo(({
         
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
-            <MaterialIcons name="assignment" size={16} color={COLORS.gray[500]} />
+            <Icon name="assignment" size={16} color={COLORS.gray[500]} />
             <Text style={styles.metaText}>
               {form.totalFields || 0} {form.totalFields === 1 ? 'field' : 'fields'}
             </Text>
           </View>
           
           <View style={styles.metaItem}>
-            <MaterialIcons name="schedule" size={16} color={COLORS.gray[500]} />
+            <Icon name="schedule" size={16} color={COLORS.gray[500]} />
             <Text style={styles.metaText}>
               {form.estimatedTime || '15'} min
             </Text>
@@ -86,7 +86,7 @@ export const FormCard = React.memo(({
           
           {form.deadline && (
             <View style={styles.metaItem}>
-              <MaterialIcons name="event" size={16} color={COLORS.gray[500]} />
+              <Icon name="event" size={16} color={COLORS.gray[500]} />
               <Text style={styles.metaText}>
                 Due {form.deadline}
               </Text>

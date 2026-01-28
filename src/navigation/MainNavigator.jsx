@@ -2,6 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import DashboardScreen from '../screens/Dashboard/DashboardScreen';
+import RecordEntryScreen from '../screens/RecordEntry/RecordEntryScreen';
 import { ROUTES } from '../constants/routes';
 
 const Stack = createStackNavigator();
@@ -48,6 +49,11 @@ const MainNavigator = () => {
         name={ROUTES.PROFILE}
         component={ProfileScreen}
         options={{ title: 'Profile' }}
+      />
+      <Stack.Screen
+        name={ROUTES.RECORD_ENTRY}
+        component={RecordEntryScreen}
+        options={{ title: 'Record Entry' }}
       />
     </Stack.Navigator>
   );

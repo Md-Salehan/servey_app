@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { COLORS } from '../../../../constants/colors';
 import { errorStateStyles as styles } from './ErrorState.styles';
-import { MaterialIcons } from '@expo/vector-icons';
 
 export const ErrorState = ({ 
   error,
@@ -11,7 +11,7 @@ export const ErrorState = ({
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <MaterialIcons name="error-outline" size={64} color={COLORS.error} />
+        <Icon name="error-outline" size={64} color={COLORS.error} />
       </View>
       <Text style={styles.title}>Unable to Load Forms</Text>
       <Text style={styles.message}>

@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { useGetFormsMutation } from '../../features/form/formsApi';
 import { tokenService } from '../../services/storage/tokenService';
@@ -43,17 +43,17 @@ const DashboardScreen = () => {
     fetchForms(getFormsbody);
   }, []);
 
-  const fetchForms = useCallback(async (body) => {
-    try {
-      
-      const result = await getForms(body).unwrap();
-            console.log(body, result, "xx2");
-
-      setForms(result?.content?.qryRsltSet || []);
-    } catch (err) {
-      console.error('Failed to fetch forms:', err);
-    }
-  }, [getForms]);
+  const fetchForms = useCallback(
+    async body => {
+      try {
+        const result = await getForms(body).unwrap();
+        setForms(result?.content?.qryRsltSet || []);
+      } catch (err) {
+        console.error('Failed to fetch forms:', err);
+      }
+    },
+    [getForms],
+  );
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -96,7 +96,11 @@ const DashboardScreen = () => {
   const handleFormPress = form => {
     console.log('Form selected:', form.id);
     // Navigate to form collection screen
-    // navigation.navigate('FormCollection', { formId: form.id });
+    navigation.navigate(ROUTES.RECORD_ENTRY, {
+      appId: 'AP000001', // Get this from your API response or context
+      formId: form.formId,
+      formTitle: form.formNm,
+    });
   };
 
   const handleProfilePress = () => {
@@ -126,7 +130,9 @@ const DashboardScreen = () => {
     }
 
     if (isError) {
-      return <ErrorState error={error} onRetry={() => fetchForms(getFormsbody)} />;
+      return (
+        <ErrorState error={error} onRetry={() => fetchForms(getFormsbody)} />
+      );
     }
 
     if (filteredForms.length === 0) {
@@ -182,10 +188,10 @@ const DashboardScreen = () => {
             style={styles.iconButton}
             onPress={handleProfilePress}
           >
-            <MaterialIcons name="person" size={24} color={COLORS.text.primary} />
+            <Icon name="person" size={24} color={COLORS.text.primary} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
-            <MaterialIcons name="logout" size={24} color={COLORS.error} />
+            <Icon name="logout" size={24} color={COLORS.error} />
           </TouchableOpacity>
         </View>
       </View>
