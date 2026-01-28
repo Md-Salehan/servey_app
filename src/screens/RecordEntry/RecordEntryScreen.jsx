@@ -14,7 +14,9 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import TextInputField from '../../components/form/TextInputField';
 import DatePickerField from '../../components/form/DatePickerField';
-import ImageUploadField from '../../components/form/ImageUploadField';
+// import ImageUploadField from '../../components/form/ImageUploadField';
+// import SimpleImagePickerTest from '../../components/form/SimpleImagePickerTest';
+import SimpleTest from '../../components/form/SimpleTest';
 import styles from './RecordEntry.styles';
 import { Header } from './component';
 
@@ -168,27 +170,27 @@ const RecordEntryScreen = () => {
           />
         );
 
-      case '07': // Image Upload
-        return (
-          <ImageUploadField
-            key={fcId}
-            fcId={fcId}
-            label={props?.label || 'Upload Image'}
-            required={props?.Required === 'Y'}
-            multiple={props?.multiple === true}
-            maxImages={props?.maxImages ? parseInt(props.maxImages) : 5}
-            imageQuality={
-              props?.imageQuality ? parseFloat(props.imageQuality) : 0.8
-            }
-            maxFileSize={props?.maxFileSize ? parseInt(props.maxFileSize) : 5}
-            allowedTypes={
-              props?.allowedTypes
-                ? props.allowedTypes.split(',').map(type => type.trim())
-                : ['image/jpeg', 'image/png', 'image/jpg']
-            }
-            onImagesChange={(fcId, images) => handleFieldChange(fcId, images)}
-          />
-        );
+      // case '07': // Image Upload
+      //   return (
+      //     <ImageUploadField
+      //       key={fcId}
+      //       fcId={fcId}
+      //       label={props?.label || 'Upload Image'}
+      //       required={props?.Required === 'Y'}
+      //       multiple={props?.multiple === true}
+      //       maxImages={props?.maxImages ? parseInt(props.maxImages) : 5}
+      //       imageQuality={
+      //         props?.imageQuality ? parseFloat(props.imageQuality) : 0.8
+      //       }
+      //       maxFileSize={props?.maxFileSize ? parseInt(props.maxFileSize) : 5}
+      //       allowedTypes={
+      //         props?.allowedTypes
+      //           ? props.allowedTypes.split(',').map(type => type.trim())
+      //           : ['image/jpeg', 'image/png', 'image/jpg']
+      //       }
+      //       onImagesChange={(fcId, images) => handleFieldChange(fcId, images)}
+      //     />
+      //   );
 
       default:
         return (
@@ -288,7 +290,8 @@ const RecordEntryScreen = () => {
             </View>
           )}
         </View>
-
+        {/* <SimpleImagePickerTest /> */}
+        <SimpleTest />
         {/* Submission Error */}
         {submissionError && (
           <View style={styles.submissionErrorContainer}>

@@ -1,6 +1,14 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { API_BASE_URL } from '../../constants/api';
+import { API_BASE_URL, API_IDS } from '../../constants/api';
 import TokenService from '../../services/storage/tokenService';
+
+// Helper function to add API ID to payload
+const addApiId = (payload, apiId) => {
+  return {
+    ...payload,
+    apiId
+  };
+};
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -16,6 +24,55 @@ export const authApi = createApi({
   }),
   tagTypes: ['User'],
   endpoints: (builder) => ({
+    // Get OTP option details (API 1)
+    getOtpOptionDetails: builder.mutation({
+      query: (payload) => ({
+        url: '/SUF00135/Mob/getOtpOptnChngDtl',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+    
+    // Get OTP log number (API 2)
+    getOtpLogNumber: builder.mutation({
+      query: (payload) => ({
+        url: '/SUF00135/Mob/getOtpOptnChngLogNo',
+        method: 'POST',
+        body: addApiId(payload, API_IDS.GET_OTP_LOG_NUMBER),
+      }),
+    }),
+    
+    // Generate login OTP (API 3)
+    generateLoginOtp: builder.mutation({
+      query: (payload) => ({
+        url: '/SUF00124/Mob/generateLoginOtp',
+        method: 'POST',
+        body: addApiId(payload, API_IDS.GENERATE_LOGIN_OTP),
+      }),
+    }),
+    
+    // Validate login OTP (API 4)
+    validateLoginOtp: builder.mutation({
+      query: (payload) => ({
+        url: '/SUF00124/Mob/validateLoginOtp',
+        method: 'POST',
+        body: addApiId(payload, API_IDS.VALIDATE_LOGIN_OTP),
+      }),
+      transformResponse: (response) => {
+        if (response.code === 0 && response.appMsgList.errorStatus === 0) {
+          // Store token and user data
+          const { token, ...userData } = response.content.mst;
+          if (token) {
+            TokenService.setTokens(token, token); // Using same token for refresh for now
+            TokenService.setUserData(userData);
+          }
+        }
+        return response;
+      },
+      invalidatesTags: ['User'],
+    }),
+    
+    // Legacy login mutation (for backward compatibility)
     login: builder.mutation({
       query: (credentials) => ({
         url: '/login',
@@ -30,39 +87,6 @@ export const authApi = createApi({
         return response;
       },
       invalidatesTags: ['User'],
-    }),
-    
-    // OTP APIs
-    generateOTP: builder.mutation({
-      query: ({ phone, password }) => ({
-        url: '/otp/generate',
-        method: 'POST',
-        body: { phone, password },
-      }),
-    }),
-    
-    validateOTP: builder.mutation({
-      query: ({ phone, otp }) => ({
-        url: '/otp/validate',
-        method: 'POST',
-        body: { phone, otp },
-      }),
-      transformResponse: (response) => {
-        if (response.accessToken && response.refreshToken) {
-          TokenService.setTokens(response.accessToken, response.refreshToken);
-          TokenService.setUserData(response);
-        }
-        return response;
-      },
-      invalidatesTags: ['User'],
-    }),
-    
-    resendOTP: builder.mutation({
-      query: (phone) => ({
-        url: '/otp/resend',
-        method: 'POST',
-        body: { phone },
-      }),
     }),
     
     getCurrentUser: builder.query({
@@ -81,10 +105,11 @@ export const authApi = createApi({
 });
 
 export const {
+  useGetOtpOptionDetailsMutation,
+  useGetOtpLogNumberMutation,
+  useGenerateLoginOtpMutation,
+  useValidateLoginOtpMutation,
   useLoginMutation,
-  useGenerateOTPMutation,
-  useValidateOTPMutation,
-  useResendOTPMutation,
   useGetCurrentUserQuery,
   useLazyGetCurrentUserQuery,
   useRefreshTokenMutation,

@@ -5,7 +5,8 @@ export const ROUTES = {
   HOME: 'Home',
   OTP: 'OTP', 
   DASHBOARD: 'Dashboard',
-  RECORD_ENTRY: 'RecordEntry'
+  RECORD_ENTRY: 'RecordEntry',
+  OTP_OPTION_SELECTION: 'OtpOptionSelection',
 };
 
 export const STORAGE_KEYS = {
@@ -14,4 +15,5 @@ export const STORAGE_KEYS = {
   USER_DATA: 'userData',
   OTP_PHONE: 'otpPhone',
   CURRENT_FORM: 'currentForm',
+  OTP_SESSION: 'otp_session',
 };

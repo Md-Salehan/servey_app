@@ -63,22 +63,21 @@ const ImageUploadField = ({
   };
 
   const requestStoragePermission = async () => {
-    if (Platform.OS === 'android' && Platform.Version >= 33) {
+    if (Platform.OS === 'android') {
       try {
-        const photosGranted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        );
-        return photosGranted === PermissionsAndroid.RESULTS.GRANTED;
-      } catch (err) {
-        console.error('Storage permission error:', err);
-        return false;
-      }
-    } else if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
+        // For Android 13+ (API level 33+)
+        if (Platform.Version >= 33) {
+          const photosGranted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+          );
+          return photosGranted === PermissionsAndroid.RESULTS.GRANTED;
+        } else {
+          // For Android < 13
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        }
       } catch (err) {
         console.error('Storage permission error:', err);
         return false;
@@ -89,58 +88,43 @@ const ImageUploadField = ({
 
   // Validate image file
   const validateImage = (file) => {
+    // Check if file type exists
+    if (!file.type) {
+      // If type is not provided, try to determine from uri
+      const uri = file.uri || '';
+      if (uri.endsWith('.jpg') || uri.endsWith('.jpeg')) {
+        file.type = 'image/jpeg';
+      } else if (uri.endsWith('.png')) {
+        file.type = 'image/png';
+      } else {
+        return {
+          valid: false,
+          error: 'Could not determine file type',
+        };
+      }
+    }
+
     // Check file type
-    if (!allowedTypes.includes(file.type)) {
+    const normalizedTypes = allowedTypes.map(type => type.toLowerCase());
+    if (!normalizedTypes.includes(file.type.toLowerCase())) {
       return {
         valid: false,
-        error: `File type not supported. Allowed types: ${allowedTypes.map(t => t.split('/')[1]).join(', ')}`,
+        error: `File type not supported. Allowed types: ${allowedTypes.map(t => t.split('/')[1] || t).join(', ')}`,
       };
     }
 
     // Check file size (convert bytes to MB)
-    const fileSizeInMB = file.fileSize / (1024 * 1024);
-    if (fileSizeInMB > maxFileSize) {
-      return {
-        valid: false,
-        error: `File size exceeds ${maxFileSize}MB limit`,
-      };
+    if (file.fileSize) {
+      const fileSizeInMB = file.fileSize / (1024 * 1024);
+      if (fileSizeInMB > maxFileSize) {
+        return {
+          valid: false,
+          error: `File size exceeds ${maxFileSize}MB limit`,
+        };
+      }
     }
 
     return { valid: true };
-  };
-
-  // Compress image data for display
-  const compressImageForDisplay = (base64, width, height) => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new window.Image();
-      
-      img.onload = () => {
-        // Calculate new dimensions maintaining aspect ratio
-        let newWidth = width;
-        let newHeight = height;
-        
-        if (width > compressImageMaxWidth) {
-          const ratio = compressImageMaxWidth / width;
-          newWidth = compressImageMaxWidth;
-          newHeight = height * ratio;
-        }
-        
-        if (newHeight > compressImageMaxHeight) {
-          const ratio = compressImageMaxHeight / newHeight;
-          newHeight = compressImageMaxHeight;
-          newWidth = newWidth * ratio;
-        }
-        
-        canvas.width = newWidth;
-        canvas.height = newHeight;
-        ctx.drawImage(img, 0, 0, newWidth, newHeight);
-        resolve(canvas.toDataURL('image/jpeg', imageQuality));
-      };
-      
-      img.src = `data:image/jpeg;base64,${base64}`;
-    });
   };
 
   // Handle image selection
@@ -172,7 +156,7 @@ const ImageUploadField = ({
         quality: imageQuality,
         maxWidth: compressImageMaxWidth,
         maxHeight: compressImageMaxHeight,
-        includeBase64: true,
+        includeBase64: false, // Don't include base64 by default to avoid memory issues
         selectionLimit: multiple ? maxImages - images.length : 1,
         saveToPhotos: source === 'camera',
       };
@@ -182,20 +166,24 @@ const ImageUploadField = ({
         : await launchImageLibrary(options);
 
       if (result.didCancel) {
+        console.log('User cancelled image picker');
         return;
       }
 
       if (result.errorCode) {
+        console.error('Image picker error:', result.errorMessage);
         handleError(result.errorMessage || 'Failed to get image');
         return;
       }
 
       if (result.assets && result.assets.length > 0) {
         await processSelectedImages(result.assets);
+      } else {
+        handleError('No images selected');
       }
     } catch (error) {
       console.error('Image selection error:', error);
-      handleError('Failed to select image');
+      handleError('Failed to select image: ' + error.message);
     }
   };
 
@@ -217,7 +205,6 @@ const ImageUploadField = ({
         const imageObj = {
           id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           uri: asset.uri,
-          base64: asset.base64,
           type: asset.type || 'image/jpeg',
           fileName: asset.fileName || `image_${Date.now()}.jpg`,
           fileSize: asset.fileSize,
@@ -238,11 +225,12 @@ const ImageUploadField = ({
 
     // Update state with new images
     const updatedImages = multiple ? [...images, ...newImages] : [...newImages];
-    setImages(updatedImages.slice(0, maxImages)); // Ensure we don't exceed max
+    const finalImages = updatedImages.slice(0, maxImages);
+    setImages(finalImages);
 
     // Notify parent component
     if (onImagesChange) {
-      onImagesChange(fcId, updatedImages.slice(0, maxImages));
+      onImagesChange(fcId, finalImages);
     }
 
     // Show any validation errors
@@ -414,9 +402,11 @@ const ImageUploadField = ({
           <Text style={styles.fileName} numberOfLines={1}>
             {image.fileName}
           </Text>
-          <Text style={styles.fileSize}>
-            {(image.fileSize / (1024 * 1024)).toFixed(2)} MB
-          </Text>
+          {image.fileSize && (
+            <Text style={styles.fileSize}>
+              {(image.fileSize / (1024 * 1024)).toFixed(2)} MB
+            </Text>
+          )}
           {hasError && (
             <TouchableOpacity
               style={styles.retryButton}
@@ -469,21 +459,25 @@ const ImageUploadField = ({
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, images.length >= maxImages && styles.disabledButton]}
           onPress={() => handleImageSelection('camera')}
           disabled={images.length >= maxImages && !multiple}
         >
-          <Icon name="photo-camera" size={20} color={COLORS.primary} />
-          <Text style={styles.actionButtonText}>Camera</Text>
+          <Icon name="photo-camera" size={20} color={images.length >= maxImages ? COLORS.text.disabled : COLORS.primary} />
+          <Text style={[styles.actionButtonText, images.length >= maxImages && styles.disabledButtonText]}>
+            Camera
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, images.length >= maxImages && styles.disabledButton]}
           onPress={() => handleImageSelection('gallery')}
           disabled={images.length >= maxImages && !multiple}
         >
-          <Icon name="photo-library" size={20} color={COLORS.primary} />
-          <Text style={styles.actionButtonText}>Gallery</Text>
+          <Icon name="photo-library" size={20} color={images.length >= maxImages ? COLORS.text.disabled : COLORS.primary} />
+          <Text style={[styles.actionButtonText, images.length >= maxImages && styles.disabledButtonText]}>
+            Gallery
+          </Text>
         </TouchableOpacity>
 
         {images.length > 0 && (
@@ -525,7 +519,9 @@ const ImageUploadField = ({
         <View style={styles.allowedTypesList}>
           {allowedTypes.map((type, index) => (
             <View key={index} style={styles.typeTag}>
-              <Text style={styles.typeText}>{type.split('/')[1]}</Text>
+              <Text style={styles.typeText}>
+                {type.split('/')[1] || type.replace('image/', '')}
+              </Text>
             </View>
           ))}
         </View>
@@ -708,11 +704,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  disabledButton: {
+    backgroundColor: COLORS.gray[200],
+    borderColor: COLORS.gray[300],
+  },
   actionButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.primary,
     fontFamily: 'System',
+  },
+  disabledButtonText: {
+    color: COLORS.text.disabled,
   },
   uploadButton: {
     backgroundColor: COLORS.primary,
