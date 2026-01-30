@@ -15,6 +15,9 @@ import { ROUTES } from '../../constants/routes';
 import TextInputField from '../../components/form/TextInputField';
 import DatePickerField from '../../components/form/DatePickerField';
 import ImageUploadField from '../../components/form/ImageUploadField';
+import CheckboxField from '../../components/form/CheckboxField';
+import SimpleTest from '../../components/form/SimpleTest';
+import DropdownField from '../../components/form/DropdownField';
 import styles from './RecordEntry.styles';
 import { Header } from './component';
 
@@ -190,6 +193,47 @@ const RecordEntryScreen = () => {
           />
         );
 
+      case '03': // Dropdown
+        return (
+          <DropdownField
+            key={fcId}
+            fcId={fcId}
+            label={props?.Label || ''}
+            placeholder={props?.Placeholder || 'Select option'}
+            options={props?.Options || ''}
+            multiple={props?.multiple === true}
+            required={props?.Required === 'Y'}
+            value={fieldValues[fcId]}
+            onChange={value => handleFieldChange(fcId, value)}
+            disabled={props?.Editable === 'N'}
+            searchable={true}
+            maxSelections={
+              props?.['Maximum Selections']
+                ? parseInt(props['Maximum Selections'])
+                : undefined
+            }
+          />
+        );
+
+      case '05': // Check Box
+        return (
+          <CheckboxField
+            key={fcId}
+            fcId={fcId}
+            label={props?.Label || ''}
+            value={
+              fieldValues[fcId] ||
+              props?.value === 'true' ||
+              props?.value === true
+            }
+            onChange={checked => handleFieldChange(fcId, checked)}
+            required={props?.Required === 'Y'}
+            disabled={props?.Editable === 'N'}
+            description={props?.Description || 'The issue is that without proper linking, the MaterialIcons font files arent being bundled with your app, so the icons cant render. '}
+            // error={validationErrors[fcId] || ''}
+          />
+        );
+
       default:
         return (
           <View key={fcId} style={styles.unsupportedContainer}>
@@ -288,6 +332,7 @@ const RecordEntryScreen = () => {
             </View>
           )}
         </View>
+        <SimpleTest />
 
         {/* Submission Error */}
         {submissionError && (

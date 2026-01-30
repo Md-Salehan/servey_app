@@ -70,6 +70,20 @@ const styles = StyleSheet.create({
   dateTimePicker: {
     backgroundColor: COLORS.surface,
   },
+  // NEW: Common styles for checkbox
+  errorText: {
+    fontSize: 12,
+    color: COLORS.error,
+    marginTop: 4,
+    fontFamily: 'System',
+  },
+  descriptionText: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
+    marginTop: 4,
+    fontFamily: 'System',
+    lineHeight: 18,
+  },
 });
 
 export default styles;
